@@ -105,6 +105,7 @@ const DECISIONS: DecisionItem[] = [
 export function App() {
   const [state, setState] = useState<StatusState>({ kind: 'loading' });
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const isMockPreview = state.kind === 'ready' && state.source === 'mock';
 
   const load = useCallback(async () => {
     setIsRefreshing(true);
@@ -132,10 +133,12 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (isMockPreview) return;
+
     load();
     const timer = window.setInterval(load, POLL_MS);
     return () => window.clearInterval(timer);
-  }, [load]);
+  }, [isMockPreview, load]);
 
   return (
     <main className="appShell">
@@ -239,7 +242,7 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
         <section className="mockBanner">
           <TestTube2 size={16} />
           <strong>Mock preview mode</strong>
-          <span>Static read-only sample data is being rendered because the local Mission Control backend is offline.</span>
+          <span>Auto-refresh is paused in mock mode. Use Refresh Status when you want to test the live backend again.</span>
         </section>
       ) : null}
 
