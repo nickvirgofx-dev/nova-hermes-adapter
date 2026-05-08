@@ -17,7 +17,6 @@ import {
   Search,
   ServerCrash,
   ShieldCheck,
-  Sparkles,
   TestTube2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -175,7 +174,7 @@ export function App() {
           <div className="heroCopy">
             <p className="eyebrow">Nova / Hermes Adapter</p>
             <h1>Mission Control</h1>
-            <p className="subtitle">A read-only work command board for daily focus, active projects, Nova runtime status, and safety gates.</p>
+            <p className="subtitle">Read-only work board for focus, projects, status, and safety.</p>
           </div>
           <div className="heroActions">
             <StatusBadge state={state} />
@@ -272,27 +271,20 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
       {source === 'mock' ? (
         <section className="mockBanner">
           <TestTube2 size={16} />
-          <strong>Mock preview mode</strong>
-          <span>Auto-refresh is paused in mock mode. Use Refresh Status when you want to test the live backend again.</span>
+          <strong>Mock preview</strong>
+          <span>Auto-refresh paused. Press Refresh Status to test live backend.</span>
         </section>
       ) : null}
 
       <section className="focusPanel" id="focus">
         <div>
           <p className="eyebrow">Today’s Focus</p>
-          <h2>Make Nova Mission Control simple, readable, and useful for daily work.</h2>
-          <p className="muted">Current best next step: finish the board UX on 5173, then connect live 8765 data, then merge into one local app.</p>
+          <h2>Make the board readable first.</h2>
+          <p className="muted">Keep the UI stable on 5173, then connect live 8765 data, then merge into one local app.</p>
         </div>
         <div className="focusMeta">
           <StatusChip label="Mode" value={source === 'mock' ? 'Mock preview' : 'Live read-only'} tone={source === 'mock' ? 'warn' : 'ok'} />
           <StatusChip label="Checked" value={formatDate(checkedAt)} />
-        </div>
-      </section>
-
-      <section className="projectSection" id="projects">
-        <PanelTitle icon={<FolderKanban size={18} />} title="Active Projects" />
-        <div className="projectGrid">
-          {PROJECTS.map((project) => <ProjectCardView key={project.name} project={project} />)}
         </div>
       </section>
 
@@ -303,28 +295,30 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
         <StatusChip label="Wake Logs" value={formatNumber(data.logCount)} />
       </section>
 
+      <section className="projectSection" id="projects">
+        <PanelTitle icon={<FolderKanban size={18} />} title="Active Projects" />
+        <div className="projectList">
+          {PROJECTS.map((project) => <ProjectRow key={project.name} project={project} />)}
+        </div>
+      </section>
+
       <section className="panel healthPanel">
         <PanelTitle icon={<Activity size={18} />} title="System Health Summary" />
         <div className="healthGrid">
           <ContractItem label="Current state" value={health.description} />
           <ContractItem label="What to do next" value={health.next} />
           <ContractItem label="Live data target" value={`${missionControlBaseUrl()}/api/status`} />
-          <ContractItem label="Read-only rule" value="The board can inspect status, but cannot execute tasks or write memory." />
+          <ContractItem label="Read-only rule" value="Inspect status only. No execution or memory writes." />
         </div>
       </section>
 
       <div className="grid">
-        <Metric icon={<ShieldCheck />} label="Policy" value={data.policy} tone="ok" />
-        <Metric icon={<PauseCircle />} label="Pause State" value={data.pause.active ? 'Paused' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
-        <Metric icon={<Database />} label="Queue Total" value={formatNumber(data.queueTotal)} />
-        <Metric icon={<Activity />} label="Wake Logs" value={formatNumber(data.logCount)} />
-
         <section className="panel wide" id="requests">
           <PanelTitle icon={<Inbox size={18} />} title="Request Inbox Preview" />
           <div className="requestList">
             {REQUESTS.map((request) => <RequestRow key={`${request.source}-${request.title}`} request={request} />)}
           </div>
-          <p className="muted smallText">Requests are displayed as planning signals only. No request can run commands from this board.</p>
+          <p className="muted smallText">Planning signals only. No request can run commands from this board.</p>
         </section>
 
         <section className="panel wide" id="queues">
@@ -335,7 +329,7 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
             <Queue label="Done" value={data.queues.done} tone="ok" />
             <Queue label="Rejected" value={data.queues.rejected} tone="warn" />
           </div>
-          <p className="muted smallText">Queue counts are displayed as status data only. Items are not treated as executable commands.</p>
+          <p className="muted smallText">Queue counts are status data only. Items are not executable commands.</p>
         </section>
 
         <section className="panel wide" id="wake-logs">
@@ -363,7 +357,7 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
           <div className="brainSyncGrid">
             <ContractItem label="Current rule" value="Record meaningful work into the Obsidian brain handoff." />
             <ContractItem label="Write policy" value="UI remains read-only; brain updates happen through approved repo/doc workflow only." />
-            <ContractItem label="Next handoff" value="Dashboard UX shifted toward daily focus, projects, requests, decisions, and brain sync." />
+            <ContractItem label="Next handoff" value="Dashboard UX shifted toward readable recovery layout." />
             <ContractItem label="Archivist gate" value="Future memory promotion still needs Nova Archivist review." />
           </div>
         </section>
@@ -419,16 +413,6 @@ function StatusChip({ label, value, tone }: { label: string; value: string; tone
   );
 }
 
-function Metric({ icon, label, value, tone }: { icon: ReactNode; label: string; value: string; tone?: 'ok' | 'warn' }) {
-  return (
-    <section className={`metric ${tone ?? ''}`}>
-      <div className="metricIcon">{icon}</div>
-      <p>{label}</p>
-      <strong>{value}</strong>
-    </section>
-  );
-}
-
 function Queue({ label, value = 0, tone }: { label: string; value?: number; tone?: 'ok' | 'warn' }) {
   return (
     <div className={`queueItem ${tone ?? ''}`}>
@@ -438,16 +422,14 @@ function Queue({ label, value = 0, tone }: { label: string; value?: number; tone
   );
 }
 
-function ProjectCardView({ project }: { project: ProjectCard }) {
+function ProjectRow({ project }: { project: ProjectCard }) {
   return (
-    <article className="projectCard">
-      <div className="projectCardHeader">
-        <Sparkles size={16} />
-        <span className={`projectStatus ${project.status}`}>{project.status}</span>
+    <article className="projectRow">
+      <div>
+        <strong>{project.name}</strong>
+        <p>{project.next}</p>
       </div>
-      <h3>{project.name}</h3>
-      <p>{project.next}</p>
-      <small>{project.note}</small>
+      <span className={`projectStatus ${project.status}`}>{project.status}</span>
     </article>
   );
 }
