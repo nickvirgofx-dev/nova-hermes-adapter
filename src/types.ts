@@ -42,6 +42,11 @@ export type MissionControlStatus = {
 };
 
 export type StatusState =
-  | { kind: 'loading' }
-  | { kind: 'offline'; message: string }
-  | { kind: 'ready'; data: MissionControlStatus };
+  | { kind: 'loading'; checkedAt?: string }
+  | { kind: 'offline'; message: string; checkedAt: string }
+  | { kind: 'ready'; data: MissionControlStatus; checkedAt: string; source: 'live' | 'mock' };
+
+export type RiskGateReminder = {
+  label: string;
+  blocked: boolean;
+};
