@@ -11,7 +11,6 @@ import {
   GitBranch,
   HelpCircle,
   Inbox,
-  PauseCircle,
   Radar,
   RefreshCw,
   Search,
@@ -35,7 +34,6 @@ type ProjectCard = {
   name: string;
   status: ProjectStatus;
   next: string;
-  note: string;
 };
 
 type DecisionItem = {
@@ -60,72 +58,26 @@ const RISK_GATES: RiskGateReminder[] = [
   { label: 'Queue items are requests only', blocked: true },
 ];
 
-const NAV_ITEMS = ['Focus', 'Projects', 'System', 'Requests', 'Queues', 'Wake Logs', 'Decisions', 'Brain Sync', 'Risk Gates'];
+const NAV_ITEMS = ['Overview', 'Projects', 'System', 'Requests', 'Queues', 'Wake Logs', 'Decisions', 'Brain Sync', 'Risk Gates'];
 
 const PROJECTS: ProjectCard[] = [
-  {
-    name: 'Nova Mission Control',
-    status: 'active',
-    next: 'Make the board easy to understand before connecting more live endpoints.',
-    note: 'Current work surface for Nova status, queues, logs, and safety gates.',
-  },
-  {
-    name: 'Cat Match App',
-    status: 'building',
-    next: 'Keep content data-driven: questions, scoring, cats, and results editable.',
-    note: 'Small web app/product track with cute stray-cat matching concept.',
-  },
-  {
-    name: 'Genesis Idle',
-    status: 'paused',
-    next: 'Return when the planet/core loop and UI direction are ready to continue.',
-    note: 'Game track focused on planets/stars, not hero combat.',
-  },
-  {
-    name: 'Obsidian Brain',
-    status: 'active',
-    next: 'Keep handoffs and system decisions recorded after meaningful work.',
-    note: 'Personal knowledge base and future Nova memory source.',
-  },
-  {
-    name: 'Art / Product Lab',
-    status: 'lab',
-    next: 'Organize product ideas, sticker sets, character names, and visual systems.',
-    note: 'Creative production track for characters, merch, and image workflows.',
-  },
+  { name: 'Nova Mission Control', status: 'active', next: 'Make the board readable before connecting live endpoints.' },
+  { name: 'Cat Match App', status: 'building', next: 'Keep questions, scoring, cats, and results data-driven.' },
+  { name: 'Genesis Idle', status: 'paused', next: 'Return when the planet/core loop is ready.' },
+  { name: 'Obsidian Brain', status: 'active', next: 'Record meaningful handoffs and decisions.' },
+  { name: 'Art / Product Lab', status: 'lab', next: 'Organize product ideas, stickers, characters, and visual systems.' },
 ];
 
 const DECISIONS: DecisionItem[] = [
-  {
-    title: 'When to merge the dashboard into 8765',
-    detail: 'Recommended after UI and /api/status live data are stable.',
-  },
-  {
-    title: 'Which project gets today’s deep-work slot',
-    detail: 'Keep one primary focus to avoid scattering across Nova, apps, games, and art.',
-  },
-  {
-    title: 'What counts as safe automation later',
-    detail: 'Future execution gates need allowlist, risk classifier, PAUSE_NOVA, audit log, and human approval.',
-  },
+  { title: 'Merge dashboard into 8765', detail: 'Do this only after UI and /api/status live data are stable.' },
+  { title: 'Pick today’s deep-work slot', detail: 'Keep one primary focus to avoid scattering across Nova, apps, games, and art.' },
+  { title: 'Define safe automation later', detail: 'Future actions need allowlist, risk classifier, PAUSE_NOVA, audit log, and human approval.' },
 ];
 
 const REQUESTS: RequestItem[] = [
-  {
-    source: 'Manual',
-    title: 'Improve Mission Control board clarity',
-    status: 'Active design request',
-  },
-  {
-    source: 'Brain',
-    title: 'Record dashboard roadmap and handoff',
-    status: 'Needs documentation sync',
-  },
-  {
-    source: 'Future',
-    title: 'Add live /api/queues and /api/logs readers',
-    status: 'Read-only planned',
-  },
+  { source: 'Manual', title: 'Improve Mission Control board clarity', status: 'Active design request' },
+  { source: 'Brain', title: 'Record dashboard roadmap and handoff', status: 'Needs documentation sync' },
+  { source: 'Future', title: 'Add live /api/queues and /api/logs readers', status: 'Read-only planned' },
 ];
 
 export function App() {
@@ -174,7 +126,7 @@ export function App() {
           <div className="heroCopy">
             <p className="eyebrow">Nova / Hermes Adapter</p>
             <h1>Mission Control</h1>
-            <p className="subtitle">Read-only work board for focus, projects, status, and safety.</p>
+            <p className="subtitle">Read-only overview for focus, project status, Nova health, and safety.</p>
           </div>
           <div className="heroActions">
             <StatusBadge state={state} />
@@ -268,72 +220,61 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
 
   return (
     <div className="dashboardStack">
-      {source === 'mock' ? (
-        <section className="mockBanner">
-          <TestTube2 size={16} />
-          <strong>Mock preview</strong>
-          <span>Auto-refresh paused. Press Refresh Status to test live backend.</span>
-        </section>
-      ) : null}
+      <section className="firstScreen" id="overview">
+        {source === 'mock' ? (
+          <div className="mockNotice">
+            <TestTube2 size={16} />
+            <strong>Mock preview</strong>
+            <span>Static data. Auto-refresh paused.</span>
+          </div>
+        ) : null}
 
-      <section className="focusPanel" id="focus">
-        <div>
+        <section className="focusCard" id="focus">
           <p className="eyebrow">Today’s Focus</p>
           <h2>Make the board readable first.</h2>
-          <p className="muted">Keep the UI stable on 5173, then connect live 8765 data, then merge into one local app.</p>
-        </div>
-        <div className="focusMeta">
-          <StatusChip label="Mode" value={source === 'mock' ? 'Mock preview' : 'Live read-only'} tone={source === 'mock' ? 'warn' : 'ok'} />
+          <p className="muted">Keep the UI stable on 5173, connect live 8765 data later, then merge into one local app.</p>
+        </section>
+
+        <section className="statusStrip" id="system">
+          <StatusChip label="Health" value={health.label} tone={health.tone} />
+          <StatusChip label="Pause" value={data.pause.active ? 'Active' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
+          <StatusChip label="Server" value={serverAddress(data.server.host, data.server.port)} />
           <StatusChip label="Checked" value={formatDate(checkedAt)} />
-        </div>
+        </section>
+
+        <section className="projectSection" id="projects">
+          <PanelTitle icon={<FolderKanban size={18} />} title="Active Projects" />
+          <div className="projectList compactList">
+            {PROJECTS.map((project) => <ProjectRow key={project.name} project={project} />)}
+          </div>
+        </section>
       </section>
 
-      <section className="statusStrip" id="system">
-        <StatusChip label="Health" value={health.label} tone={health.tone} />
-        <StatusChip label="Pause" value={data.pause.active ? 'Active' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
-        <StatusChip label="Server" value={serverAddress(data.server.host, data.server.port)} />
-        <StatusChip label="Wake Logs" value={formatNumber(data.logCount)} />
-      </section>
-
-      <section className="projectSection" id="projects">
-        <PanelTitle icon={<FolderKanban size={18} />} title="Active Projects" />
-        <div className="projectList">
-          {PROJECTS.map((project) => <ProjectRow key={project.name} project={project} />)}
-        </div>
-      </section>
-
-      <section className="panel healthPanel">
-        <PanelTitle icon={<Activity size={18} />} title="System Health Summary" />
-        <div className="healthGrid">
+      <section className="detailStack" aria-label="Detailed dashboard sections">
+        <DetailsSection icon={<Activity size={18} />} title="System Health Summary">
           <ContractItem label="Current state" value={health.description} />
           <ContractItem label="What to do next" value={health.next} />
           <ContractItem label="Live data target" value={`${missionControlBaseUrl()}/api/status`} />
           <ContractItem label="Read-only rule" value="Inspect status only. No execution or memory writes." />
-        </div>
-      </section>
+        </DetailsSection>
 
-      <div className="grid">
-        <section className="panel wide" id="requests">
-          <PanelTitle icon={<Inbox size={18} />} title="Request Inbox Preview" />
-          <div className="requestList">
+        <DetailsSection icon={<Inbox size={18} />} title="Request Inbox Preview" id="requests">
+          <div className="requestList compactList">
             {REQUESTS.map((request) => <RequestRow key={`${request.source}-${request.title}`} request={request} />)}
           </div>
           <p className="muted smallText">Planning signals only. No request can run commands from this board.</p>
-        </section>
+        </DetailsSection>
 
-        <section className="panel wide" id="queues">
-          <PanelTitle icon={<Database size={18} />} title="Queue Overview" />
+        <DetailsSection icon={<Database size={18} />} title="Queue Overview" id="queues">
           <div className="queueGrid">
             <Queue label="Inbox" value={data.queues.inbox} />
             <Queue label="Approved" value={data.queues.approved} />
             <Queue label="Done" value={data.queues.done} tone="ok" />
             <Queue label="Rejected" value={data.queues.rejected} tone="warn" />
           </div>
-          <p className="muted smallText">Queue counts are status data only. Items are not executable commands.</p>
-        </section>
+        </DetailsSection>
 
-        <section className="panel wide" id="wake-logs">
-          <PanelTitle icon={<Radar size={18} />} title="Latest Wake Logs" />
+        <DetailsSection icon={<Radar size={18} />} title="Latest Wake Logs" id="wake-logs">
           <LogToolbar filter={logFilter} query={logQuery} onFilterChange={setLogFilter} onQueryChange={setLogQuery} />
           <div className="logSummary">
             <span>{formatNumber(visibleLogs.length)} visible</span>
@@ -343,65 +284,64 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
           <div className="logList">
             {visibleLogs.length ? visibleLogs.slice(0, 8).map((log, index) => <LogRow key={log.path ?? log.name ?? index} log={log} />) : <EmptyState text="No logs match the current filter." />}
           </div>
-        </section>
+        </DetailsSection>
 
-        <section className="panel wide" id="decisions">
-          <PanelTitle icon={<HelpCircle size={18} />} title="Decision Queue" />
-          <div className="decisionList">
+        <DetailsSection icon={<HelpCircle size={18} />} title="Decision Queue" id="decisions">
+          <div className="decisionList compactList">
             {DECISIONS.map((item) => <DecisionRow key={item.title} item={item} />)}
           </div>
-        </section>
+        </DetailsSection>
 
-        <section className="panel wide" id="brain-sync">
-          <PanelTitle icon={<Brain size={18} />} title="Brain Sync" />
-          <div className="brainSyncGrid">
-            <ContractItem label="Current rule" value="Record meaningful work into the Obsidian brain handoff." />
-            <ContractItem label="Write policy" value="UI remains read-only; brain updates happen through approved repo/doc workflow only." />
-            <ContractItem label="Next handoff" value="Dashboard UX shifted toward readable recovery layout." />
-            <ContractItem label="Archivist gate" value="Future memory promotion still needs Nova Archivist review." />
-          </div>
-        </section>
+        <DetailsSection icon={<Brain size={18} />} title="Brain Sync" id="brain-sync">
+          <ContractItem label="Current rule" value="Record meaningful work into the Obsidian brain handoff." />
+          <ContractItem label="Write policy" value="UI remains read-only; brain updates happen through approved repo/doc workflow only." />
+          <ContractItem label="Next handoff" value="Dashboard UX shifted toward first-screen overview." />
+          <ContractItem label="Archivist gate" value="Future memory promotion still needs Nova Archivist review." />
+        </DetailsSection>
 
-        <section className="panel" id="runtime">
-          <PanelTitle icon={<FileCheck2 size={18} />} title="Bootstrap Docs" />
+        <DetailsSection icon={<FileCheck2 size={18} />} title="Bootstrap Docs" id="runtime">
           <p className="bigNumber">{data.docsReady}/{data.docsTotal}</p>
           <p className="muted">Required files present</p>
           <div className="docList">
             {data.docs.length ? data.docs.map((doc) => <DocRow key={doc.name} name={doc.name} ready={doc.ready} />) : <EmptyState text="No doc checklist reported." />}
           </div>
-        </section>
+        </DetailsSection>
 
-        <section className="panel" id="risk-gates">
-          <PanelTitle icon={<CircleSlash size={18} />} title="Risk Gates" />
-          <div className="gateList">
+        <DetailsSection icon={<CircleSlash size={18} />} title="Risk Gates" id="risk-gates">
+          <div className="gateList compactList">
             {RISK_GATES.map((gate) => <GateRow key={gate.label} gate={gate} />)}
           </div>
-        </section>
+        </DetailsSection>
 
-        <section className="panel wide">
-          <PanelTitle icon={<GitBranch size={18} />} title="Runtime Paths" />
+        <DetailsSection icon={<GitBranch size={18} />} title="Runtime Paths">
           <Path label="Runtime" value={data.runtimeRoot} />
           <Path label="Brain" value={data.brainRoot} />
           <Path label="Mission" value={data.missionRoot} />
           <Path label="Pause Flag" value={data.pause.path} />
-        </section>
+        </DetailsSection>
 
-        <section className="panel wide" id="contract">
-          <PanelTitle icon={<ShieldCheck size={18} />} title="Read-only Contract" />
-          <div className="contractGrid">
-            <ContractItem label="Allowed" value="GET /api/status" />
-            <ContractItem label="Default Backend" value={missionControlBaseUrl()} />
-            <ContractItem label="Boundary" value="No writes, execution, terminal, tokens, or remote control" />
-            <ContractItem label="Generated" value={formatDate(data.generatedAt)} />
-          </div>
-        </section>
-      </div>
+        <DetailsSection icon={<ShieldCheck size={18} />} title="Read-only Contract">
+          <ContractItem label="Allowed" value="GET /api/status" />
+          <ContractItem label="Default Backend" value={missionControlBaseUrl()} />
+          <ContractItem label="Boundary" value="No writes, execution, terminal, tokens, or remote control" />
+          <ContractItem label="Generated" value={formatDate(data.generatedAt)} />
+        </DetailsSection>
+      </section>
     </div>
   );
 }
 
 function PanelTitle({ icon, title }: { icon: ReactNode; title: string }) {
   return <h2 className="panelTitle">{icon}{title}</h2>;
+}
+
+function DetailsSection({ icon, title, id, children }: { icon: ReactNode; title: string; id?: string; children: ReactNode }) {
+  return (
+    <details className="detailsPanel" id={id}>
+      <summary>{icon}<span>{title}</span></summary>
+      <div className="detailsBody">{children}</div>
+    </details>
+  );
 }
 
 function StatusChip({ label, value, tone }: { label: string; value: string; tone?: 'ok' | 'warn' }) {
