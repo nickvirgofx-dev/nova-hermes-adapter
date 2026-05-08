@@ -11,6 +11,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -28,10 +32,105 @@ select {
   font: inherit;
 }
 
-.shell {
-  width: min(1240px, calc(100vw - 40px));
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.appShell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 24px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 12, 17, 0.82);
+  backdrop-filter: blur(18px);
+  padding: 22px 18px;
+}
+
+.brandBlock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandBlock strong,
+.brandBlock span {
+  display: block;
+}
+
+.brandBlock span,
+.sideLabel,
+.sideFooter p {
+  color: #9fa7b3;
+  font-size: 13px;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(199, 168, 90, 0.52);
+  background: rgba(199, 168, 90, 0.12);
+  color: #e7c46f;
+  font-weight: 800;
+}
+
+.sideNav {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.sideNav a {
+  color: #d8d3c8;
+  text-decoration: none;
+  border: 1px solid transparent;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sideNav a:hover,
+.sideNav a:focus-visible {
+  border-color: rgba(199, 168, 90, 0.45);
+  background: rgba(199, 168, 90, 0.1);
+  outline: none;
+}
+
+.sideFooter {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 24, 30, 0.78);
+  padding: 14px;
+}
+
+.sideFooter strong {
+  display: block;
+  margin: 4px 0 8px;
+}
+
+.sideFooter p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mainStage {
+  min-width: 0;
+  width: min(1280px, calc(100vw - 260px));
   margin: 0 auto;
-  padding: 32px 0 48px;
+  padding: 32px 28px 48px;
 }
 
 .hero {
@@ -48,6 +147,13 @@ select {
 
 .heroCopy {
   max-width: 760px;
+}
+
+.heroActions {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .eyebrow {
@@ -84,7 +190,8 @@ h2 {
   margin-bottom: 0;
 }
 
-.badge {
+.badge,
+.refreshButton {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -93,6 +200,17 @@ h2 {
   background: rgba(22, 24, 30, 0.88);
   color: #d8d3c8;
   white-space: nowrap;
+}
+
+.refreshButton {
+  color: #f4f1ea;
+}
+
+.refreshButton:hover:not(:disabled),
+.refreshButton:focus-visible {
+  border-color: rgba(199, 168, 90, 0.52);
+  background: rgba(199, 168, 90, 0.12);
+  outline: none;
 }
 
 .badge.ok {
@@ -107,6 +225,16 @@ h2 {
   background: rgba(102, 78, 30, 0.22);
 }
 
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .dashboardStack {
   display: grid;
   gap: 16px;
@@ -116,6 +244,7 @@ h2 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+  scroll-margin-top: 24px;
 }
 
 .statusChip,
@@ -138,7 +267,8 @@ h2 {
 .logRow p,
 .queueItem span,
 .docRow,
-.contractItem span {
+.contractItem span,
+.logSummary {
   color: #9fa7b3;
 }
 
@@ -167,6 +297,7 @@ h2 {
 .metric,
 .panel {
   padding: 18px;
+  scroll-margin-top: 24px;
 }
 
 .metric {
@@ -245,6 +376,19 @@ h2 {
 
 .queueItem.warn strong {
   color: #e7c46f;
+}
+
+.logSummary {
+  display: flex;
+  gap: 10px;
+  margin: -4px 0 12px;
+  font-size: 13px;
+}
+
+.logSummary span {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(9, 10, 14, 0.38);
+  padding: 6px 8px;
 }
 
 .logList,
@@ -349,7 +493,30 @@ code {
   margin: 12px 0 0;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1100px) {
+  .appShell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .sideNav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mainStage {
+    width: min(1280px, 100vw);
+  }
+}
+
+@media (max-width: 900px) {
   .grid,
   .statusStrip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -357,9 +524,8 @@ code {
 }
 
 @media (max-width: 700px) {
-  .shell {
-    width: min(100vw - 24px, 1180px);
-    padding-top: 20px;
+  .mainStage {
+    padding: 20px 12px 40px;
   }
 
   .hero {
@@ -368,10 +534,21 @@ code {
     padding: 22px;
   }
 
+  .heroActions {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .badge,
+  .refreshButton {
+    justify-content: center;
+  }
+
   .grid,
   .queueGrid,
   .statusStrip,
-  .contractGrid {
+  .contractGrid,
+  .sideNav {
     grid-template-columns: 1fr;
   }
 
