@@ -382,7 +382,8 @@ h3 {
 .docRow,
 .contractItem span,
 .logSummary,
-.decisionRow p {
+.decisionRow p,
+.requestRow p {
   color: #9fa7b3;
 }
 
@@ -440,8 +441,13 @@ h3 {
   color: #e7c46f;
 }
 
-.panel.wide {
+.panel.wide,
+.healthPanel {
   grid-column: span 2;
+}
+
+.healthPanel {
+  scroll-margin-top: 24px;
 }
 
 .panelTitle {
@@ -477,7 +483,8 @@ h3 {
 .contractItem,
 .docRow,
 .gateRow,
-.decisionRow {
+.decisionRow,
+.requestRow {
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(9, 10, 14, 0.45);
 }
@@ -501,10 +508,104 @@ h3 {
   color: #e7c46f;
 }
 
-.logSummary {
-  display: flex;
+.healthGrid,
+.brainSyncGrid,
+.contractGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.requestList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.requestRow,
+.decisionRow {
+  padding: 12px;
+}
+
+.requestRow span {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid rgba(199, 168, 90, 0.38);
+  color: #e7c46f;
+  padding: 3px 6px;
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+
+.requestRow strong,
+.decisionRow strong {
+  display: block;
+  line-height: 1.35;
+}
+
+.requestRow p,
+.decisionRow p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.logToolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   margin: -4px 0 12px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(8, 9, 12, 0.78);
+  color: #9fa7b3;
+  padding: 0 10px;
+}
+
+.searchBox input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #f4f1ea;
+  padding: 10px 0;
+}
+
+.searchBox input::placeholder {
+  color: #777f8d;
+}
+
+.filterButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.filterButtons button {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 10, 14, 0.45);
+  color: #d8d3c8;
+  padding: 9px 10px;
+  text-transform: capitalize;
+}
+
+.filterButtons button:hover,
+.filterButtons button:focus-visible,
+.filterButtons button.activeFilter {
+  border-color: rgba(199, 168, 90, 0.52);
+  background: rgba(199, 168, 90, 0.12);
+  outline: none;
+}
+
+.logSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 12px;
   font-size: 13px;
 }
 
@@ -530,8 +631,7 @@ h3 {
   padding: 12px;
 }
 
-.logRow p,
-.decisionRow p {
+.logRow p {
   margin: 4px 0 0;
   font-size: 13px;
   line-height: 1.5;
@@ -540,17 +640,6 @@ h3 {
 .logRow code {
   margin-top: 8px;
   font-size: 12px;
-}
-
-.decisionRow {
-  padding: 12px;
-}
-
-.brainSyncGrid,
-.contractGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
 }
 
 .dot {
@@ -628,7 +717,8 @@ code {
 }
 
 @media (max-width: 1280px) {
-  .projectGrid {
+  .projectGrid,
+  .requestList {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -655,7 +745,8 @@ code {
     width: min(1280px, 100vw);
   }
 
-  .focusPanel {
+  .focusPanel,
+  .logToolbar {
     grid-template-columns: 1fr;
   }
 }
@@ -663,7 +754,8 @@ code {
 @media (max-width: 900px) {
   .grid,
   .statusStrip,
-  .projectGrid {
+  .projectGrid,
+  .requestList {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -699,12 +791,19 @@ code {
   .statusStrip,
   .contractGrid,
   .brainSyncGrid,
+  .healthGrid,
   .sideNav,
-  .projectGrid {
+  .projectGrid,
+  .requestList {
     grid-template-columns: 1fr;
   }
 
-  .panel.wide {
+  .filterButtons {
+    flex-wrap: wrap;
+  }
+
+  .panel.wide,
+  .healthPanel {
     grid-column: auto;
   }
 }
