@@ -8,13 +8,17 @@ import {
   FileCheck2,
   PauseCircle,
   Radar,
+  RefreshCw,
   ServerCrash,
   ShieldCheck,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { fetchMissionControlStatus, missionControlBaseUrl } from './api';
-import type { MissionControlStatus, QueueCounts, RiskGateReminder, StatusState, WakeLog } from './types';
+import { formatBytes, formatDate, formatNumber, serverAddress } from './lib/format';
+import { normalizeMissionStatus } from './lib/normalizeStatus';
+import type { NormalizedMissionStatus } from './lib/normalizeStatus';
+import type { RiskGateReminder, StatusState, WakeLog } from './types';
 
 const POLL_MS = 15_000;
 
@@ -27,46 +31,81 @@ const RISK_GATES: RiskGateReminder[] = [
   { label: 'Queue items are requests only', blocked: true },
 ];
 
+const NAV_ITEMS = ['Overview', 'Queues', 'Wake Logs', 'Risk Gates', 'Runtime', 'Contract'];
+
 export function App() {
   const [state, setState] = useState<StatusState>({ kind: 'loading' });
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-
-    async function load() {
-      const controller = new AbortController();
-      try {
-        const data = await fetchMissionControlStatus(controller.signal);
-        if (alive) setState({ kind: 'ready', data, checkedAt: new Date().toISOString(), source: 'live' });
-      } catch (error) {
-        if (!alive) return;
-        const message = error instanceof Error ? error.message : 'Mission Control is offline';
-        setState({ kind: 'offline', message, checkedAt: new Date().toISOString() });
-      }
+  const load = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const data = await fetchMissionControlStatus();
+      setState({ kind: 'ready', data, checkedAt: new Date().toISOString(), source: 'live' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Mission Control is offline';
+      setState({ kind: 'offline', message, checkedAt: new Date().toISOString() });
+    } finally {
+      setIsRefreshing(false);
     }
-
-    load();
-    const timer = window.setInterval(load, POLL_MS);
-
-    return () => {
-      alive = false;
-      window.clearInterval(timer);
-    };
   }, []);
 
-  return (
-    <main className="shell">
-      <header className="hero">
-        <div className="heroCopy">
-          <p className="eyebrow">Nova / Hermes Adapter</p>
-          <h1>Mission Control</h1>
-          <p className="subtitle">Read-only local dashboard for Nova status, queue health, wake logs, and risk gates.</p>
-        </div>
-        <StatusBadge state={state} />
-      </header>
+  useEffect(() => {
+    load();
+    const timer = window.setInterval(load, POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [load]);
 
-      {state.kind === 'ready' ? <Dashboard data={state.data} checkedAt={state.checkedAt} /> : <OfflinePanel state={state} />}
+  return (
+    <main className="appShell">
+      <Sidebar state={state} />
+      <section className="mainStage">
+        <header className="hero">
+          <div className="heroCopy">
+            <p className="eyebrow">Nova / Hermes Adapter</p>
+            <h1>Mission Control</h1>
+            <p className="subtitle">Read-only local dashboard for Nova status, queue health, wake logs, and risk gates.</p>
+          </div>
+          <div className="heroActions">
+            <StatusBadge state={state} />
+            <button className="refreshButton" type="button" onClick={load} disabled={isRefreshing}>
+              <RefreshCw size={16} className={isRefreshing ? 'spin' : ''} />
+              Refresh Status
+            </button>
+          </div>
+        </header>
+
+        {state.kind === 'ready' ? <Dashboard data={normalizeMissionStatus(state.data)} checkedAt={state.checkedAt} /> : <OfflinePanel state={state} />}
+      </section>
     </main>
+  );
+}
+
+function Sidebar({ state }: { state: StatusState }) {
+  return (
+    <aside className="sidebar">
+      <div className="brandBlock">
+        <div className="brandMark">N</div>
+        <div>
+          <strong>Nova Shell</strong>
+          <span>Read-only</span>
+        </div>
+      </div>
+
+      <nav className="sideNav" aria-label="Dashboard sections">
+        {NAV_ITEMS.map((item) => (
+          <a key={item} href={`#${sectionId(item)}`}>
+            {item}
+          </a>
+        ))}
+      </nav>
+
+      <div className="sideFooter">
+        <span className="sideLabel">Boundary</span>
+        <strong>{state.kind === 'ready' ? 'GET-only online' : 'Offline-safe'}</strong>
+        <p>No terminal, execution, token, memory-write, or remote-control features.</p>
+      </div>
+    </aside>
   );
 }
 
@@ -95,57 +134,56 @@ function OfflinePanel({ state }: { state: StatusState }) {
   );
 }
 
-function Dashboard({ data, checkedAt }: { data: MissionControlStatus; checkedAt: string }) {
-  const queues = data.queues ?? {};
-  const logs = data.logs?.latest ?? [];
-  const docs = data.docs ?? {};
-  const docsReady = useMemo(() => Object.values(docs).filter(Boolean).length, [docs]);
-  const docsTotal = Object.keys(docs).length;
-  const pauseActive = data.pause?.active === true;
+function Dashboard({ data, checkedAt }: { data: NormalizedMissionStatus; checkedAt: string }) {
+  const failedLogs = useMemo(() => data.logs.filter((log) => log.ok === false).length, [data.logs]);
 
   return (
     <div className="dashboardStack">
-      <section className="statusStrip">
-        <StatusChip label="Policy" value={data.policy ?? 'read-only'} tone="ok" />
-        <StatusChip label="Pause" value={pauseActive ? 'Active' : 'Ready'} tone={pauseActive ? 'warn' : 'ok'} />
-        <StatusChip label="Server" value={serverLabel(data)} />
+      <section className="statusStrip" id="overview">
+        <StatusChip label="Policy" value={data.policy} tone="ok" />
+        <StatusChip label="Pause" value={data.pause.active ? 'Active' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
+        <StatusChip label="Server" value={serverAddress(data.server.host, data.server.port)} />
         <StatusChip label="Checked" value={formatDate(checkedAt)} />
       </section>
 
       <div className="grid">
-        <Metric icon={<ShieldCheck />} label="Policy" value={data.policy ?? 'read-only'} tone="ok" />
-        <Metric icon={<PauseCircle />} label="Pause State" value={pauseActive ? 'Paused' : 'Ready'} tone={pauseActive ? 'warn' : 'ok'} />
-        <Metric icon={<Database />} label="Queue Total" value={queueTotal(queues).toString()} />
-        <Metric icon={<Activity />} label="Wake Logs" value={(data.logs?.count ?? logs.length).toString()} />
+        <Metric icon={<ShieldCheck />} label="Policy" value={data.policy} tone="ok" />
+        <Metric icon={<PauseCircle />} label="Pause State" value={data.pause.active ? 'Paused' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
+        <Metric icon={<Database />} label="Queue Total" value={formatNumber(data.queueTotal)} />
+        <Metric icon={<Activity />} label="Wake Logs" value={formatNumber(data.logCount)} />
 
-        <section className="panel wide">
+        <section className="panel wide" id="queues">
           <PanelTitle icon={<Database size={18} />} title="Queue Overview" />
           <div className="queueGrid">
-            <Queue label="Inbox" value={queues.inbox} />
-            <Queue label="Approved" value={queues.approved} />
-            <Queue label="Done" value={queues.done} tone="ok" />
-            <Queue label="Rejected" value={queues.rejected} tone="warn" />
+            <Queue label="Inbox" value={data.queues.inbox} />
+            <Queue label="Approved" value={data.queues.approved} />
+            <Queue label="Done" value={data.queues.done} tone="ok" />
+            <Queue label="Rejected" value={data.queues.rejected} tone="warn" />
           </div>
           <p className="muted smallText">Queue counts are displayed as status data only. Items are not treated as executable commands.</p>
         </section>
 
-        <section className="panel wide">
+        <section className="panel wide" id="wake-logs">
           <PanelTitle icon={<Radar size={18} />} title="Latest Wake Logs" />
+          <div className="logSummary">
+            <span>{formatNumber(data.logs.length)} shown</span>
+            <span>{formatNumber(failedLogs)} flagged</span>
+          </div>
           <div className="logList">
-            {logs.length ? logs.slice(0, 6).map((log, index) => <LogRow key={log.path ?? log.name ?? index} log={log} />) : <EmptyState text="No logs reported by Mission Control." />}
+            {data.logs.length ? data.logs.slice(0, 6).map((log, index) => <LogRow key={log.path ?? log.name ?? index} log={log} />) : <EmptyState text="No logs reported by Mission Control." />}
           </div>
         </section>
 
-        <section className="panel">
+        <section className="panel" id="runtime">
           <PanelTitle icon={<FileCheck2 size={18} />} title="Bootstrap Docs" />
-          <p className="bigNumber">{docsReady}/{docsTotal || 0}</p>
+          <p className="bigNumber">{data.docsReady}/{data.docsTotal}</p>
           <p className="muted">Required files present</p>
           <div className="docList">
-            {Object.entries(docs).length ? Object.entries(docs).map(([name, ready]) => <DocRow key={name} name={name} ready={ready} />) : <EmptyState text="No doc checklist reported." />}
+            {data.docs.length ? data.docs.map((doc) => <DocRow key={doc.name} name={doc.name} ready={doc.ready} />) : <EmptyState text="No doc checklist reported." />}
           </div>
         </section>
 
-        <section className="panel">
+        <section className="panel" id="risk-gates">
           <PanelTitle icon={<CircleSlash size={18} />} title="Risk Gates" />
           <div className="gateList">
             {RISK_GATES.map((gate) => <GateRow key={gate.label} gate={gate} />)}
@@ -154,18 +192,19 @@ function Dashboard({ data, checkedAt }: { data: MissionControlStatus; checkedAt:
 
         <section className="panel wide">
           <PanelTitle icon={<Activity size={18} />} title="Runtime Paths" />
-          <Path label="Runtime" value={data.runtime_root} />
-          <Path label="Brain" value={data.brain_root} />
-          <Path label="Mission" value={data.mission_root} />
+          <Path label="Runtime" value={data.runtimeRoot} />
+          <Path label="Brain" value={data.brainRoot} />
+          <Path label="Mission" value={data.missionRoot} />
+          <Path label="Pause Flag" value={data.pause.path} />
         </section>
 
-        <section className="panel wide">
+        <section className="panel wide" id="contract">
           <PanelTitle icon={<ShieldCheck size={18} />} title="Read-only Contract" />
           <div className="contractGrid">
             <ContractItem label="Allowed" value="GET /api/status" />
             <ContractItem label="Default Backend" value={missionControlBaseUrl()} />
             <ContractItem label="Boundary" value="No writes, execution, terminal, tokens, or remote control" />
-            <ContractItem label="Generated" value={formatDate(data.generated_at)} />
+            <ContractItem label="Generated" value={formatDate(data.generatedAt)} />
           </div>
         </section>
       </div>
@@ -211,7 +250,7 @@ function LogRow({ log }: { log: WakeLog }) {
       <span className={log.ok === false ? 'dot warnDot' : 'dot okDot'} />
       <div>
         <strong>{log.name ?? 'wake log'}</strong>
-        <p>{log.status ?? 'unknown'} · {formatDate(log.modified)}</p>
+        <p>{log.status ?? 'unknown'} · {formatDate(log.modified)} · {formatBytes(log.size)}</p>
         {log.path ? <code>{log.path}</code> : null}
       </div>
     </article>
@@ -258,22 +297,6 @@ function EmptyState({ text }: { text: string }) {
   return <p className="emptyState">{text}</p>;
 }
 
-function queueTotal(queues: QueueCounts) {
-  return (queues.inbox ?? 0) + (queues.approved ?? 0) + (queues.done ?? 0) + (queues.rejected ?? 0);
-}
-
-function serverLabel(data: MissionControlStatus) {
-  const host = data.server?.host ?? '127.0.0.1';
-  const port = data.server?.default_port ?? 8765;
-  return `${host}:${port}`;
-}
-
-function formatDate(value?: string) {
-  if (!value) return '-';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
+function sectionId(value: string): string {
+  return value.toLowerCase().replace(/\s+/g, '-');
 }
