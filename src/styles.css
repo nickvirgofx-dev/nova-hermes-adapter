@@ -110,6 +110,16 @@ button:disabled {
   outline: none;
 }
 
+.sideNav a.disabledLink {
+  color: #777f8d;
+}
+
+.sideNav a.disabledLink:hover,
+.sideNav a.disabledLink:focus-visible {
+  border-color: rgba(231, 196, 111, 0.32);
+  background: rgba(231, 196, 111, 0.08);
+}
+
 .sideFooter {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(22, 24, 30, 0.78);
@@ -219,7 +229,8 @@ h2 {
   background: rgba(36, 94, 76, 0.22);
 }
 
-.badge.warn {
+.badge.warn,
+.badge.mock {
   border-color: rgba(231, 196, 111, 0.55);
   color: #e7c46f;
   background: rgba(102, 78, 30, 0.22);
@@ -238,6 +249,20 @@ h2 {
 .dashboardStack {
   display: grid;
   gap: 16px;
+}
+
+.mockBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(231, 196, 111, 0.4);
+  background: rgba(102, 78, 30, 0.16);
+  color: #e7c46f;
+  padding: 12px 14px;
+}
+
+.mockBanner span {
+  color: #d8d3c8;
 }
 
 .statusStrip {
@@ -342,6 +367,14 @@ h2 {
   gap: 18px;
   color: #e7c46f;
   min-height: 260px;
+  scroll-margin-top: 24px;
+}
+
+.offlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .queueGrid {
@@ -542,6 +575,11 @@ code {
   .badge,
   .refreshButton {
     justify-content: center;
+  }
+
+  .mockBanner {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .grid,

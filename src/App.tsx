@@ -11,6 +11,7 @@ import {
   RefreshCw,
   ServerCrash,
   ShieldCheck,
+  TestTube2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -18,6 +19,7 @@ import { fetchMissionControlStatus, missionControlBaseUrl } from './api';
 import { formatBytes, formatDate, formatNumber, serverAddress } from './lib/format';
 import { normalizeMissionStatus } from './lib/normalizeStatus';
 import type { NormalizedMissionStatus } from './lib/normalizeStatus';
+import { mockMissionControlStatus } from './mock/missionControlStatus';
 import type { RiskGateReminder, StatusState, WakeLog } from './types';
 
 const POLL_MS = 15_000;
@@ -50,6 +52,18 @@ export function App() {
     }
   }, []);
 
+  const showMockPreview = useCallback(() => {
+    setState({
+      kind: 'ready',
+      data: {
+        ...mockMissionControlStatus,
+        generated_at: new Date().toISOString(),
+      },
+      checkedAt: new Date().toISOString(),
+      source: 'mock',
+    });
+  }, []);
+
   useEffect(() => {
     load();
     const timer = window.setInterval(load, POLL_MS);
@@ -75,13 +89,19 @@ export function App() {
           </div>
         </header>
 
-        {state.kind === 'ready' ? <Dashboard data={normalizeMissionStatus(state.data)} checkedAt={state.checkedAt} /> : <OfflinePanel state={state} />}
+        {state.kind === 'ready' ? (
+          <Dashboard data={normalizeMissionStatus(state.data)} checkedAt={state.checkedAt} source={state.source} />
+        ) : (
+          <OfflinePanel state={state} onPreviewMock={showMockPreview} />
+        )}
       </section>
     </main>
   );
 }
 
 function Sidebar({ state }: { state: StatusState }) {
+  const isDashboardVisible = state.kind === 'ready';
+
   return (
     <aside className="sidebar">
       <div className="brandBlock">
@@ -94,7 +114,7 @@ function Sidebar({ state }: { state: StatusState }) {
 
       <nav className="sideNav" aria-label="Dashboard sections">
         {NAV_ITEMS.map((item) => (
-          <a key={item} href={`#${sectionId(item)}`}>
+          <a key={item} href={isDashboardVisible ? `#${sectionId(item)}` : '#offline'} className={isDashboardVisible ? '' : 'disabledLink'}>
             {item}
           </a>
         ))}
@@ -102,7 +122,7 @@ function Sidebar({ state }: { state: StatusState }) {
 
       <div className="sideFooter">
         <span className="sideLabel">Boundary</span>
-        <strong>{state.kind === 'ready' ? 'GET-only online' : 'Offline-safe'}</strong>
+        <strong>{state.kind === 'ready' ? `${state.source === 'mock' ? 'Mock preview' : 'GET-only online'}` : 'Offline-safe'}</strong>
         <p>No terminal, execution, token, memory-write, or remote-control features.</p>
       </div>
     </aside>
@@ -110,6 +130,9 @@ function Sidebar({ state }: { state: StatusState }) {
 }
 
 function StatusBadge({ state }: { state: StatusState }) {
+  if (state.kind === 'ready' && state.source === 'mock') {
+    return <span className="badge mock"><TestTube2 size={16} /> Mock preview</span>;
+  }
   if (state.kind === 'ready') {
     return <span className="badge ok"><CheckCircle2 size={16} /> Read-only online</span>;
   }
@@ -119,26 +142,40 @@ function StatusBadge({ state }: { state: StatusState }) {
   return <span className="badge"><Clock3 size={16} /> Checking local status</span>;
 }
 
-function OfflinePanel({ state }: { state: StatusState }) {
+function OfflinePanel({ state, onPreviewMock }: { state: StatusState; onPreviewMock: () => void }) {
   return (
-    <section className="panel offlinePanel">
+    <section className="panel offlinePanel" id="offline">
       <ServerCrash size={34} />
       <div>
         <p className="eyebrow">Offline-safe state</p>
         <h2>Mission Control is not reachable</h2>
         <p className="muted">{state.kind === 'offline' ? state.message : 'Loading local status...'}</p>
         <code>{missionControlBaseUrl()}/api/status</code>
-        <p className="muted smallText">The UI only performs a GET request and does not expose execution, terminal, token, memory-write, or remote-control features.</p>
+        <div className="offlineActions">
+          <button className="refreshButton" type="button" onClick={onPreviewMock}>
+            <TestTube2 size={16} />
+            Preview Mock Dashboard
+          </button>
+        </div>
+        <p className="muted smallText">Preview uses static local mock data only. The UI still performs no execution, terminal control, token integration, memory write, or remote control.</p>
       </div>
     </section>
   );
 }
 
-function Dashboard({ data, checkedAt }: { data: NormalizedMissionStatus; checkedAt: string }) {
+function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus; checkedAt: string; source: 'live' | 'mock' }) {
   const failedLogs = useMemo(() => data.logs.filter((log) => log.ok === false).length, [data.logs]);
 
   return (
     <div className="dashboardStack">
+      {source === 'mock' ? (
+        <section className="mockBanner">
+          <TestTube2 size={16} />
+          <strong>Mock preview mode</strong>
+          <span>Static read-only sample data is being rendered because the local Mission Control backend is offline.</span>
+        </section>
+      ) : null}
+
       <section className="statusStrip" id="overview">
         <StatusChip label="Policy" value={data.policy} tone="ok" />
         <StatusChip label="Pause" value={data.pause.active ? 'Active' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
