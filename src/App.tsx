@@ -1,16 +1,21 @@
 import {
   Activity,
   AlertTriangle,
+  Brain,
   CheckCircle2,
   CircleSlash,
   Clock3,
   Database,
   FileCheck2,
+  FolderKanban,
+  GitBranch,
+  HelpCircle,
   PauseCircle,
   Radar,
   RefreshCw,
   ServerCrash,
   ShieldCheck,
+  Sparkles,
   TestTube2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -21,6 +26,20 @@ import { normalizeMissionStatus } from './lib/normalizeStatus';
 import type { NormalizedMissionStatus } from './lib/normalizeStatus';
 import { mockMissionControlStatus } from './mock/missionControlStatus';
 import type { RiskGateReminder, StatusState, WakeLog } from './types';
+
+type ProjectStatus = 'active' | 'building' | 'paused' | 'lab';
+
+type ProjectCard = {
+  name: string;
+  status: ProjectStatus;
+  next: string;
+  note: string;
+};
+
+type DecisionItem = {
+  title: string;
+  detail: string;
+};
 
 const POLL_MS = 15_000;
 
@@ -33,7 +52,55 @@ const RISK_GATES: RiskGateReminder[] = [
   { label: 'Queue items are requests only', blocked: true },
 ];
 
-const NAV_ITEMS = ['Overview', 'Queues', 'Wake Logs', 'Risk Gates', 'Runtime', 'Contract'];
+const NAV_ITEMS = ['Focus', 'Projects', 'System', 'Queues', 'Wake Logs', 'Decisions', 'Brain Sync', 'Risk Gates'];
+
+const PROJECTS: ProjectCard[] = [
+  {
+    name: 'Nova Mission Control',
+    status: 'active',
+    next: 'Make the board easy to understand before connecting more live endpoints.',
+    note: 'Current work surface for Nova status, queues, logs, and safety gates.',
+  },
+  {
+    name: 'Cat Match App',
+    status: 'building',
+    next: 'Keep content data-driven: questions, scoring, cats, and results editable.',
+    note: 'Small web app/product track with cute stray-cat matching concept.',
+  },
+  {
+    name: 'Genesis Idle',
+    status: 'paused',
+    next: 'Return when the planet/core loop and UI direction are ready to continue.',
+    note: 'Game track focused on planets/stars, not hero combat.',
+  },
+  {
+    name: 'Obsidian Brain',
+    status: 'active',
+    next: 'Keep handoffs and system decisions recorded after meaningful work.',
+    note: 'Personal knowledge base and future Nova memory source.',
+  },
+  {
+    name: 'Art / Product Lab',
+    status: 'lab',
+    next: 'Organize product ideas, sticker sets, character names, and visual systems.',
+    note: 'Creative production track for characters, merch, and image workflows.',
+  },
+];
+
+const DECISIONS: DecisionItem[] = [
+  {
+    title: 'When to merge the dashboard into 8765',
+    detail: 'Recommended after UI and /api/status live data are stable.',
+  },
+  {
+    title: 'Which project gets today’s deep-work slot',
+    detail: 'Keep one primary focus to avoid scattering across Nova, apps, games, and art.',
+  },
+  {
+    title: 'What counts as safe automation later',
+    detail: 'Future execution gates need allowlist, risk classifier, PAUSE_NOVA, audit log, and human approval.',
+  },
+];
 
 export function App() {
   const [state, setState] = useState<StatusState>({ kind: 'loading' });
@@ -78,7 +145,7 @@ export function App() {
           <div className="heroCopy">
             <p className="eyebrow">Nova / Hermes Adapter</p>
             <h1>Mission Control</h1>
-            <p className="subtitle">Read-only local dashboard for Nova status, queue health, wake logs, and risk gates.</p>
+            <p className="subtitle">A read-only work command board for daily focus, active projects, Nova runtime status, and safety gates.</p>
           </div>
           <div className="heroActions">
             <StatusBadge state={state} />
@@ -176,11 +243,30 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
         </section>
       ) : null}
 
-      <section className="statusStrip" id="overview">
+      <section className="focusPanel" id="focus">
+        <div>
+          <p className="eyebrow">Today’s Focus</p>
+          <h2>Make Nova Mission Control simple, readable, and useful for daily work.</h2>
+          <p className="muted">Current best next step: finish the board UX on 5173, then connect live 8765 data, then merge into one local app.</p>
+        </div>
+        <div className="focusMeta">
+          <StatusChip label="Mode" value={source === 'mock' ? 'Mock preview' : 'Live read-only'} tone={source === 'mock' ? 'warn' : 'ok'} />
+          <StatusChip label="Checked" value={formatDate(checkedAt)} />
+        </div>
+      </section>
+
+      <section className="projectSection" id="projects">
+        <PanelTitle icon={<FolderKanban size={18} />} title="Active Projects" />
+        <div className="projectGrid">
+          {PROJECTS.map((project) => <ProjectCardView key={project.name} project={project} />)}
+        </div>
+      </section>
+
+      <section className="statusStrip" id="system">
         <StatusChip label="Policy" value={data.policy} tone="ok" />
         <StatusChip label="Pause" value={data.pause.active ? 'Active' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
         <StatusChip label="Server" value={serverAddress(data.server.host, data.server.port)} />
-        <StatusChip label="Checked" value={formatDate(checkedAt)} />
+        <StatusChip label="Wake Logs" value={formatNumber(data.logCount)} />
       </section>
 
       <div className="grid">
@@ -211,6 +297,23 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
           </div>
         </section>
 
+        <section className="panel wide" id="decisions">
+          <PanelTitle icon={<HelpCircle size={18} />} title="Decision Queue" />
+          <div className="decisionList">
+            {DECISIONS.map((item) => <DecisionRow key={item.title} item={item} />)}
+          </div>
+        </section>
+
+        <section className="panel wide" id="brain-sync">
+          <PanelTitle icon={<Brain size={18} />} title="Brain Sync" />
+          <div className="brainSyncGrid">
+            <ContractItem label="Current rule" value="Record meaningful work into the Obsidian brain handoff." />
+            <ContractItem label="Write policy" value="UI remains read-only; brain updates happen through approved repo/doc workflow only." />
+            <ContractItem label="Next handoff" value="Dashboard UX shifted toward daily focus, projects, decisions, and brain sync." />
+            <ContractItem label="Archivist gate" value="Future memory promotion still needs Nova Archivist review." />
+          </div>
+        </section>
+
         <section className="panel" id="runtime">
           <PanelTitle icon={<FileCheck2 size={18} />} title="Bootstrap Docs" />
           <p className="bigNumber">{data.docsReady}/{data.docsTotal}</p>
@@ -228,7 +331,7 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
         </section>
 
         <section className="panel wide">
-          <PanelTitle icon={<Activity size={18} />} title="Runtime Paths" />
+          <PanelTitle icon={<GitBranch size={18} />} title="Runtime Paths" />
           <Path label="Runtime" value={data.runtimeRoot} />
           <Path label="Brain" value={data.brainRoot} />
           <Path label="Mission" value={data.missionRoot} />
@@ -278,6 +381,29 @@ function Queue({ label, value = 0, tone }: { label: string; value?: number; tone
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function ProjectCardView({ project }: { project: ProjectCard }) {
+  return (
+    <article className="projectCard">
+      <div className="projectCardHeader">
+        <Sparkles size={16} />
+        <span className={`projectStatus ${project.status}`}>{project.status}</span>
+      </div>
+      <h3>{project.name}</h3>
+      <p>{project.next}</p>
+      <small>{project.note}</small>
+    </article>
+  );
+}
+
+function DecisionRow({ item }: { item: DecisionItem }) {
+  return (
+    <article className="decisionRow">
+      <strong>{item.title}</strong>
+      <p>{item.detail}</p>
+    </article>
   );
 }
 
