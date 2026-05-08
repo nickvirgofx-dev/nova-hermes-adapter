@@ -138,7 +138,7 @@ button:disabled {
 
 .mainStage {
   min-width: 0;
-  width: min(1280px, calc(100vw - 260px));
+  width: min(1360px, calc(100vw - 260px));
   margin: 0 auto;
   padding: 32px 28px 48px;
 }
@@ -254,7 +254,12 @@ h3 {
 
 .dashboardStack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
+}
+
+.dashboardStack > * {
+  min-width: 0;
 }
 
 .mockBanner {
@@ -283,7 +288,7 @@ h3 {
 
 .focusPanel {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
   gap: 18px;
   padding: 22px;
   scroll-margin-top: 24px;
@@ -308,12 +313,12 @@ h3 {
 
 .projectGrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
 .projectCard {
-  min-height: 210px;
+  min-height: 190px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(9, 10, 14, 0.45);
   padding: 14px;
@@ -363,7 +368,7 @@ h3 {
 
 .statusStrip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 12px;
   scroll-margin-top: 24px;
 }
@@ -474,7 +479,7 @@ h3 {
 
 .queueGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
 }
 
@@ -512,13 +517,13 @@ h3 {
 .brainSyncGrid,
 .contractGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 10px;
 }
 
 .requestList {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 10px;
 }
 
@@ -716,13 +721,6 @@ code {
   margin: 12px 0 0;
 }
 
-@media (max-width: 1280px) {
-  .projectGrid,
-  .requestList {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 1100px) {
   .appShell {
     grid-template-columns: 1fr;
@@ -742,7 +740,7 @@ code {
   }
 
   .mainStage {
-    width: min(1280px, 100vw);
+    width: min(1360px, 100vw);
   }
 
   .focusPanel,
@@ -752,10 +750,7 @@ code {
 }
 
 @media (max-width: 900px) {
-  .grid,
-  .statusStrip,
-  .projectGrid,
-  .requestList {
+  .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -787,14 +782,7 @@ code {
   }
 
   .grid,
-  .queueGrid,
-  .statusStrip,
-  .contractGrid,
-  .brainSyncGrid,
-  .healthGrid,
-  .sideNav,
-  .projectGrid,
-  .requestList {
+  .sideNav {
     grid-template-columns: 1fr;
   }
 
