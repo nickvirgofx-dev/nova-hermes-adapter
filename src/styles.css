@@ -19,9 +19,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 18% 12%, rgba(199, 168, 90, 0.12), transparent 24%),
-    linear-gradient(135deg, #0d0f14 0%, #12151d 56%, #0c0d11 100%);
+  background: #0d0f14;
 }
 
 button,
@@ -54,7 +52,7 @@ button:disabled {
   grid-template-rows: auto 1fr auto;
   gap: 20px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  background: #0b0d12;
+  background: #0a0c11;
   padding: 18px 14px;
 }
 
@@ -114,7 +112,7 @@ button:disabled {
 
 .sideFooter {
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(22, 24, 30, 0.78);
+  background: #11141c;
   padding: 12px;
 }
 
@@ -129,10 +127,19 @@ button:disabled {
 }
 
 .mainStage {
-  min-width: 0;
-  width: min(1180px, calc(100vw - 240px));
+  width: min(1040px, calc(100vw - 240px));
   margin: 0 auto;
   padding: 28px 24px 44px;
+}
+
+.hero,
+.mockBanner,
+.focusPanel,
+.projectSection,
+.statusChip,
+.panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #11141c;
 }
 
 .hero {
@@ -140,14 +147,12 @@ button:disabled {
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(22, 24, 30, 0.92);
   padding: 24px;
   margin-bottom: 14px;
 }
 
 .heroCopy {
-  max-width: 760px;
+  max-width: 720px;
 }
 
 .heroActions {
@@ -175,7 +180,7 @@ p {
 
 h1 {
   margin-bottom: 8px;
-  font-size: clamp(34px, 5vw, 54px);
+  font-size: clamp(34px, 5vw, 52px);
   line-height: 1;
   letter-spacing: -0.045em;
 }
@@ -204,7 +209,7 @@ h3 {
   gap: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 10px 12px;
-  background: rgba(10, 12, 17, 0.88);
+  background: #0b0d12;
   color: #d8d3c8;
   white-space: nowrap;
 }
@@ -239,32 +244,30 @@ h3 {
   }
 }
 
-.dashboardStack {
-  display: grid;
+.dashboardStack,
+.grid {
+  display: flex;
+  flex-direction: column;
   gap: 14px;
+}
+
+.dashboardStack > *,
+.grid > * {
+  width: 100%;
+  min-width: 0;
 }
 
 .mockBanner {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgba(231, 196, 111, 0.35);
-  background: rgba(102, 78, 30, 0.13);
+  min-height: 46px;
   color: #e7c46f;
   padding: 10px 12px;
 }
 
 .mockBanner span {
   color: #d8d3c8;
-}
-
-.focusPanel,
-.projectSection,
-.statusChip,
-.metric,
-.panel {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(22, 24, 30, 0.88);
 }
 
 .focusPanel {
@@ -287,40 +290,97 @@ h3 {
   gap: 10px;
 }
 
-.projectSection {
-  padding: 18px;
+.statusStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
   scroll-margin-top: 24px;
 }
 
-.projectGrid {
+.statusChip {
+  padding: 13px;
+  min-height: 78px;
+}
+
+.statusChip span,
+.muted,
+.pathRow span,
+.logRow p,
+.queueItem span,
+.docRow,
+.contractItem span,
+.logSummary,
+.decisionRow p,
+.requestRow p,
+.projectRow p {
+  color: #9fa7b3;
+}
+
+.statusChip strong {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusChip.ok strong {
+  color: #7ee0b5;
+}
+
+.statusChip.warn strong {
+  color: #e7c46f;
+}
+
+.projectSection,
+.panel {
+  padding: 16px;
+  scroll-margin-top: 24px;
+}
+
+.projectList,
+.requestList,
+.decisionList,
+.docList,
+.gateList,
+.logList {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.projectCard {
+.projectRow,
+.requestRow,
+.decisionRow,
+.queueItem,
+.logRow,
+.contractItem,
+.docRow,
+.gateRow {
   border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(9, 10, 14, 0.45);
-  padding: 14px;
+  background: #0b0d12;
 }
 
-.projectCardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #c7a85a;
-  margin-bottom: 12px;
+.projectRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 12px;
 }
 
-.projectCard p {
-  color: #d8d3c8;
-  line-height: 1.45;
-  margin-bottom: 10px;
+.projectRow strong,
+.requestRow strong,
+.decisionRow strong {
+  display: block;
+  line-height: 1.35;
 }
 
-.projectCard small {
-  color: #9fa7b3;
-  line-height: 1.45;
+.projectRow p,
+.requestRow p,
+.decisionRow p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .projectStatus {
@@ -346,93 +406,9 @@ h3 {
   background: rgba(102, 78, 30, 0.16);
 }
 
-.statusStrip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  scroll-margin-top: 24px;
-}
-
-.statusChip {
-  padding: 13px;
-  min-width: 0;
-}
-
-.statusChip span,
-.metric p,
-.muted,
-.pathRow span,
-.logRow p,
-.queueItem span,
-.docRow,
-.contractItem span,
-.logSummary,
-.decisionRow p,
-.requestRow p {
-  color: #9fa7b3;
-}
-
-.statusChip strong {
-  display: block;
-  margin-top: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.statusChip.ok strong {
-  color: #7ee0b5;
-}
-
-.statusChip.warn strong {
-  color: #e7c46f;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.metric,
-.panel {
-  padding: 16px;
-  scroll-margin-top: 24px;
-}
-
-.metric {
-  min-height: 118px;
-}
-
-.metricIcon {
-  color: #c7a85a;
-  margin-bottom: 16px;
-}
-
-.metric p {
-  margin-bottom: 8px;
-}
-
-.metric strong {
-  font-size: 24px;
-  line-height: 1.1;
-}
-
-.metric.ok strong {
-  color: #7ee0b5;
-}
-
-.metric.warn strong {
-  color: #e7c46f;
-}
-
 .panel.wide,
 .healthPanel {
-  grid-column: span 2;
-}
-
-.healthPanel {
-  scroll-margin-top: 24px;
+  grid-column: auto;
 }
 
 .panelTitle {
@@ -441,37 +417,35 @@ h3 {
   gap: 8px;
 }
 
-.offlinePanel {
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  color: #e7c46f;
-  min-height: 260px;
-  scroll-margin-top: 24px;
+.healthGrid,
+.brainSyncGrid,
+.contractGrid,
+.requestList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.offlineActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
+.requestRow,
+.decisionRow,
+.contractItem {
+  padding: 12px;
+}
+
+.requestRow span {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid rgba(199, 168, 90, 0.38);
+  color: #e7c46f;
+  padding: 3px 6px;
+  font-size: 11px;
+  margin-bottom: 10px;
 }
 
 .queueGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-}
-
-.queueItem,
-.logRow,
-.contractItem,
-.docRow,
-.gateRow,
-.decisionRow,
-.requestRow {
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(9, 10, 14, 0.45);
 }
 
 .queueItem {
@@ -493,43 +467,6 @@ h3 {
   color: #e7c46f;
 }
 
-.healthGrid,
-.brainSyncGrid,
-.contractGrid,
-.requestList {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.requestRow,
-.decisionRow {
-  padding: 12px;
-}
-
-.requestRow span {
-  display: inline-flex;
-  width: fit-content;
-  border: 1px solid rgba(199, 168, 90, 0.38);
-  color: #e7c46f;
-  padding: 3px 6px;
-  font-size: 11px;
-  margin-bottom: 10px;
-}
-
-.requestRow strong,
-.decisionRow strong {
-  display: block;
-  line-height: 1.35;
-}
-
-.requestRow p,
-.decisionRow p {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
 .logToolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -542,7 +479,7 @@ h3 {
   align-items: center;
   gap: 8px;
   border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(8, 9, 12, 0.78);
+  background: #0b0d12;
   color: #9fa7b3;
   padding: 0 10px;
 }
@@ -567,7 +504,7 @@ h3 {
 
 .filterButtons button {
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(9, 10, 14, 0.45);
+  background: #0b0d12;
   color: #d8d3c8;
   padding: 9px 10px;
   text-transform: capitalize;
@@ -591,16 +528,8 @@ h3 {
 
 .logSummary span {
   border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(9, 10, 14, 0.38);
+  background: #0b0d12;
   padding: 6px 8px;
-}
-
-.logList,
-.docList,
-.gateList,
-.decisionList {
-  display: grid;
-  gap: 10px;
 }
 
 .logRow {
@@ -661,10 +590,7 @@ h3 {
 .contractItem {
   display: grid;
   gap: 6px;
-  padding: 12px;
   min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(9, 10, 14, 0.45);
 }
 
 .contractItem strong {
@@ -677,7 +603,7 @@ code {
   max-width: 100%;
   overflow-wrap: anywhere;
   color: #d8d3c8;
-  background: rgba(8, 9, 12, 0.78);
+  background: #090b0f;
   border: 1px solid rgba(255, 255, 255, 0.07);
   padding: 8px;
 }
@@ -687,13 +613,29 @@ code {
   padding: 18px;
   border: 1px dashed rgba(255, 255, 255, 0.12);
   color: #9fa7b3;
-  background: rgba(9, 10, 14, 0.35);
+  background: #0b0d12;
 }
 
 .smallText {
   font-size: 13px;
   line-height: 1.55;
   margin: 12px 0 0;
+}
+
+.offlinePanel {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  color: #e7c46f;
+  min-height: 260px;
+  scroll-margin-top: 24px;
+}
+
+.offlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 @media (max-width: 1100px) {
@@ -715,12 +657,11 @@ code {
   }
 
   .mainStage {
-    width: min(1180px, 100vw);
+    width: min(1040px, 100vw);
   }
 
   .focusPanel,
   .logToolbar,
-  .projectGrid,
   .statusStrip,
   .healthGrid,
   .brainSyncGrid,
@@ -756,7 +697,6 @@ code {
     flex-direction: column;
   }
 
-  .grid,
   .queueGrid,
   .sideNav {
     grid-template-columns: 1fr;
@@ -764,10 +704,5 @@ code {
 
   .filterButtons {
     flex-wrap: wrap;
-  }
-
-  .panel.wide,
-  .healthPanel {
-    grid-column: auto;
   }
 }
