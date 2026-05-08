@@ -337,10 +337,10 @@ function PanelTitle({ icon, title }: { icon: ReactNode; title: string }) {
 
 function DetailsSection({ icon, title, id, children }: { icon: ReactNode; title: string; id?: string; children: ReactNode }) {
   return (
-    <details className="detailsPanel" id={id}>
-      <summary>{icon}<span>{title}</span></summary>
+    <section className="detailsPanel" id={id}>
+      <header className="detailsHeader">{icon}<span>{title}</span></header>
       <div className="detailsBody">{children}</div>
-    </details>
+    </section>
   );
 }
 
