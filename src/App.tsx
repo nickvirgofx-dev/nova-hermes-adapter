@@ -10,9 +10,11 @@ import {
   FolderKanban,
   GitBranch,
   HelpCircle,
+  Inbox,
   PauseCircle,
   Radar,
   RefreshCw,
+  Search,
   ServerCrash,
   ShieldCheck,
   Sparkles,
@@ -28,6 +30,7 @@ import { mockMissionControlStatus } from './mock/missionControlStatus';
 import type { RiskGateReminder, StatusState, WakeLog } from './types';
 
 type ProjectStatus = 'active' | 'building' | 'paused' | 'lab';
+type LogFilter = 'all' | 'ok' | 'flagged';
 
 type ProjectCard = {
   name: string;
@@ -41,6 +44,12 @@ type DecisionItem = {
   detail: string;
 };
 
+type RequestItem = {
+  source: string;
+  title: string;
+  status: string;
+};
+
 const POLL_MS = 15_000;
 
 const RISK_GATES: RiskGateReminder[] = [
@@ -52,7 +61,7 @@ const RISK_GATES: RiskGateReminder[] = [
   { label: 'Queue items are requests only', blocked: true },
 ];
 
-const NAV_ITEMS = ['Focus', 'Projects', 'System', 'Queues', 'Wake Logs', 'Decisions', 'Brain Sync', 'Risk Gates'];
+const NAV_ITEMS = ['Focus', 'Projects', 'System', 'Requests', 'Queues', 'Wake Logs', 'Decisions', 'Brain Sync', 'Risk Gates'];
 
 const PROJECTS: ProjectCard[] = [
   {
@@ -99,6 +108,24 @@ const DECISIONS: DecisionItem[] = [
   {
     title: 'What counts as safe automation later',
     detail: 'Future execution gates need allowlist, risk classifier, PAUSE_NOVA, audit log, and human approval.',
+  },
+];
+
+const REQUESTS: RequestItem[] = [
+  {
+    source: 'Manual',
+    title: 'Improve Mission Control board clarity',
+    status: 'Active design request',
+  },
+  {
+    source: 'Brain',
+    title: 'Record dashboard roadmap and handoff',
+    status: 'Needs documentation sync',
+  },
+  {
+    source: 'Future',
+    title: 'Add live /api/queues and /api/logs readers',
+    status: 'Read-only planned',
   },
 ];
 
@@ -234,7 +261,11 @@ function OfflinePanel({ state, onPreviewMock }: { state: StatusState; onPreviewM
 }
 
 function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus; checkedAt: string; source: 'live' | 'mock' }) {
+  const [logFilter, setLogFilter] = useState<LogFilter>('all');
+  const [logQuery, setLogQuery] = useState('');
   const failedLogs = useMemo(() => data.logs.filter((log) => log.ok === false).length, [data.logs]);
+  const visibleLogs = useMemo(() => filterLogs(data.logs, logFilter, logQuery), [data.logs, logFilter, logQuery]);
+  const health = getHealthSummary(data, source);
 
   return (
     <div className="dashboardStack">
@@ -266,10 +297,20 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
       </section>
 
       <section className="statusStrip" id="system">
-        <StatusChip label="Policy" value={data.policy} tone="ok" />
+        <StatusChip label="Health" value={health.label} tone={health.tone} />
         <StatusChip label="Pause" value={data.pause.active ? 'Active' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
         <StatusChip label="Server" value={serverAddress(data.server.host, data.server.port)} />
         <StatusChip label="Wake Logs" value={formatNumber(data.logCount)} />
+      </section>
+
+      <section className="panel healthPanel">
+        <PanelTitle icon={<Activity size={18} />} title="System Health Summary" />
+        <div className="healthGrid">
+          <ContractItem label="Current state" value={health.description} />
+          <ContractItem label="What to do next" value={health.next} />
+          <ContractItem label="Live data target" value={`${missionControlBaseUrl()}/api/status`} />
+          <ContractItem label="Read-only rule" value="The board can inspect status, but cannot execute tasks or write memory." />
+        </div>
       </section>
 
       <div className="grid">
@@ -277,6 +318,14 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
         <Metric icon={<PauseCircle />} label="Pause State" value={data.pause.active ? 'Paused' : 'Ready'} tone={data.pause.active ? 'warn' : 'ok'} />
         <Metric icon={<Database />} label="Queue Total" value={formatNumber(data.queueTotal)} />
         <Metric icon={<Activity />} label="Wake Logs" value={formatNumber(data.logCount)} />
+
+        <section className="panel wide" id="requests">
+          <PanelTitle icon={<Inbox size={18} />} title="Request Inbox Preview" />
+          <div className="requestList">
+            {REQUESTS.map((request) => <RequestRow key={`${request.source}-${request.title}`} request={request} />)}
+          </div>
+          <p className="muted smallText">Requests are displayed as planning signals only. No request can run commands from this board.</p>
+        </section>
 
         <section className="panel wide" id="queues">
           <PanelTitle icon={<Database size={18} />} title="Queue Overview" />
@@ -291,12 +340,14 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
 
         <section className="panel wide" id="wake-logs">
           <PanelTitle icon={<Radar size={18} />} title="Latest Wake Logs" />
+          <LogToolbar filter={logFilter} query={logQuery} onFilterChange={setLogFilter} onQueryChange={setLogQuery} />
           <div className="logSummary">
-            <span>{formatNumber(data.logs.length)} shown</span>
+            <span>{formatNumber(visibleLogs.length)} visible</span>
+            <span>{formatNumber(data.logs.length)} total</span>
             <span>{formatNumber(failedLogs)} flagged</span>
           </div>
           <div className="logList">
-            {data.logs.length ? data.logs.slice(0, 6).map((log, index) => <LogRow key={log.path ?? log.name ?? index} log={log} />) : <EmptyState text="No logs reported by Mission Control." />}
+            {visibleLogs.length ? visibleLogs.slice(0, 8).map((log, index) => <LogRow key={log.path ?? log.name ?? index} log={log} />) : <EmptyState text="No logs match the current filter." />}
           </div>
         </section>
 
@@ -312,7 +363,7 @@ function Dashboard({ data, checkedAt, source }: { data: NormalizedMissionStatus;
           <div className="brainSyncGrid">
             <ContractItem label="Current rule" value="Record meaningful work into the Obsidian brain handoff." />
             <ContractItem label="Write policy" value="UI remains read-only; brain updates happen through approved repo/doc workflow only." />
-            <ContractItem label="Next handoff" value="Dashboard UX shifted toward daily focus, projects, decisions, and brain sync." />
+            <ContractItem label="Next handoff" value="Dashboard UX shifted toward daily focus, projects, requests, decisions, and brain sync." />
             <ContractItem label="Archivist gate" value="Future memory promotion still needs Nova Archivist review." />
           </div>
         </section>
@@ -401,12 +452,50 @@ function ProjectCardView({ project }: { project: ProjectCard }) {
   );
 }
 
+function RequestRow({ request }: { request: RequestItem }) {
+  return (
+    <article className="requestRow">
+      <span>{request.source}</span>
+      <strong>{request.title}</strong>
+      <p>{request.status}</p>
+    </article>
+  );
+}
+
 function DecisionRow({ item }: { item: DecisionItem }) {
   return (
     <article className="decisionRow">
       <strong>{item.title}</strong>
       <p>{item.detail}</p>
     </article>
+  );
+}
+
+function LogToolbar({
+  filter,
+  query,
+  onFilterChange,
+  onQueryChange,
+}: {
+  filter: LogFilter;
+  query: string;
+  onFilterChange: (filter: LogFilter) => void;
+  onQueryChange: (query: string) => void;
+}) {
+  return (
+    <div className="logToolbar">
+      <div className="searchBox">
+        <Search size={15} />
+        <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Search logs by name, status, or path" />
+      </div>
+      <div className="filterButtons" role="group" aria-label="Log filters">
+        {(['all', 'ok', 'flagged'] as const).map((item) => (
+          <button key={item} type="button" className={filter === item ? 'activeFilter' : ''} onClick={() => onFilterChange(item)}>
+            {item}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -461,6 +550,44 @@ function Path({ label, value }: { label: string; value?: string }) {
 
 function EmptyState({ text }: { text: string }) {
   return <p className="emptyState">{text}</p>;
+}
+
+function filterLogs(logs: WakeLog[], filter: LogFilter, query: string): WakeLog[] {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  return logs.filter((log) => {
+    const matchesFilter = filter === 'all' || (filter === 'ok' ? log.ok !== false : log.ok === false);
+    const haystack = `${log.name ?? ''} ${log.status ?? ''} ${log.path ?? ''}`.toLowerCase();
+    const matchesQuery = !normalizedQuery || haystack.includes(normalizedQuery);
+    return matchesFilter && matchesQuery;
+  });
+}
+
+function getHealthSummary(data: NormalizedMissionStatus, source: 'live' | 'mock'): { label: string; tone: 'ok' | 'warn'; description: string; next: string } {
+  if (source === 'mock') {
+    return {
+      label: 'Mock only',
+      tone: 'warn',
+      description: 'The board is showing static preview data. This is good for UI review but not live Nova status.',
+      next: 'Start the local Mission Control backend on 8765, then press Refresh Status.',
+    };
+  }
+
+  if (data.pause.active) {
+    return {
+      label: 'Paused',
+      tone: 'warn',
+      description: 'Mission Control is reachable, but Nova is currently paused by the PAUSE_NOVA gate.',
+      next: 'Inspect the pause reason before continuing any future workflow.',
+    };
+  }
+
+  return {
+    label: 'Ready',
+    tone: 'ok',
+    description: 'Mission Control is reachable and reporting a ready read-only status.',
+    next: 'Review queues, logs, requests, and decisions before choosing the next work block.',
+  };
 }
 
 function sectionId(value: string): string {
