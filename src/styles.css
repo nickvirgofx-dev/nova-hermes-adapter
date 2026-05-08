@@ -127,7 +127,7 @@ button:disabled {
 }
 
 .mainStage {
-  width: min(1040px, calc(100vw - 240px));
+  width: min(980px, calc(100vw - 240px));
   margin: 0 auto;
   padding: 28px 24px 44px;
 }
@@ -136,7 +136,7 @@ button:disabled {
 .mockBanner,
 .focusPanel,
 .projectSection,
-.statusChip,
+.statusStrip,
 .panel {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: #11141c;
@@ -152,7 +152,7 @@ button:disabled {
 }
 
 .heroCopy {
-  max-width: 720px;
+  max-width: 680px;
 }
 
 .heroActions {
@@ -261,7 +261,7 @@ h3 {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 46px;
+  min-height: 44px;
   color: #e7c46f;
   padding: 10px 12px;
 }
@@ -271,11 +271,15 @@ h3 {
 }
 
 .focusPanel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
   padding: 18px;
   scroll-margin-top: 24px;
+}
+
+.focusPanel > div:first-child {
+  min-width: 0;
 }
 
 .focusPanel h2 {
@@ -287,19 +291,30 @@ h3 {
 
 .focusMeta {
   display: grid;
-  gap: 10px;
+  gap: 8px;
+  width: 260px;
+  flex: 0 0 auto;
 }
 
 .statusStrip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
   scroll-margin-top: 24px;
 }
 
 .statusChip {
-  padding: 13px;
-  min-height: 78px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 12px;
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+}
+
+.statusChip:last-child {
+  border-right: 0;
 }
 
 .statusChip span,
@@ -343,8 +358,12 @@ h3 {
 .decisionList,
 .docList,
 .gateList,
-.logList {
-  display: grid;
+.logList,
+.healthGrid,
+.brainSyncGrid,
+.contractGrid {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -406,24 +425,10 @@ h3 {
   background: rgba(102, 78, 30, 0.16);
 }
 
-.panel.wide,
-.healthPanel {
-  grid-column: auto;
-}
-
 .panelTitle {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.healthGrid,
-.brainSyncGrid,
-.contractGrid,
-.requestList {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
 }
 
 .requestRow,
@@ -468,8 +473,7 @@ h3 {
 }
 
 .logToolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   gap: 10px;
   margin: -4px 0 12px;
 }
@@ -478,6 +482,8 @@ h3 {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: #0b0d12;
   color: #9fa7b3;
@@ -657,17 +663,7 @@ code {
   }
 
   .mainStage {
-    width: min(1040px, 100vw);
-  }
-
-  .focusPanel,
-  .logToolbar,
-  .statusStrip,
-  .healthGrid,
-  .brainSyncGrid,
-  .contractGrid,
-  .requestList {
-    grid-template-columns: 1fr;
+    width: min(980px, 100vw);
   }
 }
 
@@ -676,13 +672,20 @@ code {
     padding: 20px 12px 40px;
   }
 
-  .hero {
+  .hero,
+  .focusPanel,
+  .mockBanner,
+  .logToolbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .hero {
     padding: 22px;
   }
 
-  .heroActions {
+  .heroActions,
+  .focusMeta {
     align-items: stretch;
     width: 100%;
   }
@@ -692,13 +695,10 @@ code {
     justify-content: center;
   }
 
-  .mockBanner {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
+  .statusStrip,
   .queueGrid,
   .sideNav {
+    display: grid;
     grid-template-columns: 1fr;
   }
 
