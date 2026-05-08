@@ -177,6 +177,7 @@ button:disabled {
 
 h1,
 h2,
+h3,
 p {
   margin-top: 0;
 }
@@ -191,6 +192,11 @@ h1 {
 h2 {
   font-size: 18px;
   margin-bottom: 16px;
+}
+
+h3 {
+  font-size: 17px;
+  margin-bottom: 8px;
 }
 
 .subtitle {
@@ -265,19 +271,101 @@ h2 {
   color: #d8d3c8;
 }
 
-.statusStrip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  scroll-margin-top: 24px;
-}
-
+.focusPanel,
+.projectSection,
 .statusChip,
 .metric,
 .panel {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(22, 24, 30, 0.88);
   backdrop-filter: blur(14px);
+}
+
+.focusPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+  gap: 18px;
+  padding: 22px;
+  scroll-margin-top: 24px;
+}
+
+.focusPanel h2 {
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+  margin-bottom: 10px;
+}
+
+.focusMeta {
+  display: grid;
+  gap: 10px;
+}
+
+.projectSection {
+  padding: 18px;
+  scroll-margin-top: 24px;
+}
+
+.projectGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.projectCard {
+  min-height: 210px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(9, 10, 14, 0.45);
+  padding: 14px;
+}
+
+.projectCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #c7a85a;
+  margin-bottom: 18px;
+}
+
+.projectCard p {
+  color: #d8d3c8;
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.projectCard small {
+  color: #9fa7b3;
+  line-height: 1.45;
+}
+
+.projectStatus {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 4px 7px;
+  color: #d8d3c8;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.projectStatus.active,
+.projectStatus.building {
+  border-color: rgba(70, 191, 143, 0.45);
+  color: #7ee0b5;
+  background: rgba(36, 94, 76, 0.18);
+}
+
+.projectStatus.paused,
+.projectStatus.lab {
+  border-color: rgba(231, 196, 111, 0.4);
+  color: #e7c46f;
+  background: rgba(102, 78, 30, 0.16);
+}
+
+.statusStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  scroll-margin-top: 24px;
 }
 
 .statusChip {
@@ -293,7 +381,8 @@ h2 {
 .queueItem span,
 .docRow,
 .contractItem span,
-.logSummary {
+.logSummary,
+.decisionRow p {
   color: #9fa7b3;
 }
 
@@ -387,7 +476,8 @@ h2 {
 .logRow,
 .contractItem,
 .docRow,
-.gateRow {
+.gateRow,
+.decisionRow {
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(9, 10, 14, 0.45);
 }
@@ -426,7 +516,8 @@ h2 {
 
 .logList,
 .docList,
-.gateList {
+.gateList,
+.decisionList {
   display: grid;
   gap: 10px;
 }
@@ -439,14 +530,27 @@ h2 {
   padding: 12px;
 }
 
-.logRow p {
+.logRow p,
+.decisionRow p {
   margin: 4px 0 0;
   font-size: 13px;
+  line-height: 1.5;
 }
 
 .logRow code {
   margin-top: 8px;
   font-size: 12px;
+}
+
+.decisionRow {
+  padding: 12px;
+}
+
+.brainSyncGrid,
+.contractGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .dot {
@@ -485,21 +589,18 @@ h2 {
   color: #7ee0b5;
 }
 
-.contractGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
 .contractItem {
   display: grid;
   gap: 6px;
   padding: 12px;
   min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(9, 10, 14, 0.45);
 }
 
 .contractItem strong {
   overflow-wrap: anywhere;
+  line-height: 1.45;
 }
 
 code {
@@ -526,6 +627,12 @@ code {
   margin: 12px 0 0;
 }
 
+@media (max-width: 1280px) {
+  .projectGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1100px) {
   .appShell {
     grid-template-columns: 1fr;
@@ -547,11 +654,16 @@ code {
   .mainStage {
     width: min(1280px, 100vw);
   }
+
+  .focusPanel {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {
   .grid,
-  .statusStrip {
+  .statusStrip,
+  .projectGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -586,7 +698,9 @@ code {
   .queueGrid,
   .statusStrip,
   .contractGrid,
-  .sideNav {
+  .brainSyncGrid,
+  .sideNav,
+  .projectGrid {
     grid-template-columns: 1fr;
   }
 
