@@ -20,9 +20,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 18% 12%, rgba(199, 168, 90, 0.15), transparent 28%),
-    radial-gradient(circle at 82% 2%, rgba(65, 116, 155, 0.18), transparent 30%),
-    linear-gradient(135deg, #0d0f14 0%, #12151d 52%, #0c0d11 100%);
+    radial-gradient(circle at 18% 12%, rgba(199, 168, 90, 0.12), transparent 24%),
+    linear-gradient(135deg, #0d0f14 0%, #12151d 56%, #0c0d11 100%);
 }
 
 button,
@@ -43,7 +42,7 @@ button:disabled {
 
 .appShell {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -53,17 +52,16 @@ button:disabled {
   height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 24px;
+  gap: 20px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(10, 12, 17, 0.82);
-  backdrop-filter: blur(18px);
-  padding: 22px 18px;
+  background: #0b0d12;
+  padding: 18px 14px;
 }
 
 .brandBlock {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .brandBlock strong,
@@ -81,8 +79,8 @@ button:disabled {
 .brandMark {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border: 1px solid rgba(199, 168, 90, 0.52);
   background: rgba(199, 168, 90, 0.12);
   color: #e7c46f;
@@ -92,15 +90,15 @@ button:disabled {
 .sideNav {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 7px;
 }
 
 .sideNav a {
   color: #d8d3c8;
   text-decoration: none;
   border: 1px solid transparent;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .sideNav a:hover,
@@ -114,16 +112,10 @@ button:disabled {
   color: #777f8d;
 }
 
-.sideNav a.disabledLink:hover,
-.sideNav a.disabledLink:focus-visible {
-  border-color: rgba(231, 196, 111, 0.32);
-  background: rgba(231, 196, 111, 0.08);
-}
-
 .sideFooter {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(22, 24, 30, 0.78);
-  padding: 14px;
+  padding: 12px;
 }
 
 .sideFooter strong {
@@ -138,21 +130,20 @@ button:disabled {
 
 .mainStage {
   min-width: 0;
-  width: min(1360px, calc(100vw - 260px));
+  width: min(1180px, calc(100vw - 240px));
   margin: 0 auto;
-  padding: 32px 28px 48px;
+  padding: 28px 24px 44px;
 }
 
 .hero {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  gap: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(135deg, rgba(27, 30, 38, 0.94), rgba(16, 18, 24, 0.88));
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
-  padding: 28px;
-  margin-bottom: 18px;
+  background: rgba(22, 24, 30, 0.92);
+  padding: 24px;
+  margin-bottom: 14px;
 }
 
 .heroCopy {
@@ -184,25 +175,25 @@ p {
 
 h1 {
   margin-bottom: 8px;
-  font-size: clamp(34px, 5vw, 58px);
-  line-height: 0.96;
-  letter-spacing: -0.05em;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1;
+  letter-spacing: -0.045em;
 }
 
 h2 {
   font-size: 18px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 h3 {
-  font-size: 17px;
+  font-size: 16px;
   margin-bottom: 8px;
 }
 
 .subtitle {
   color: #aeb4bf;
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: 15px;
+  line-height: 1.6;
   margin-bottom: 0;
 }
 
@@ -213,13 +204,9 @@ h3 {
   gap: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 10px 12px;
-  background: rgba(22, 24, 30, 0.88);
+  background: rgba(10, 12, 17, 0.88);
   color: #d8d3c8;
   white-space: nowrap;
-}
-
-.refreshButton {
-  color: #f4f1ea;
 }
 
 .refreshButton:hover:not(:disabled),
@@ -254,22 +241,17 @@ h3 {
 
 .dashboardStack {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-}
-
-.dashboardStack > * {
-  min-width: 0;
+  gap: 14px;
 }
 
 .mockBanner {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgba(231, 196, 111, 0.4);
-  background: rgba(102, 78, 30, 0.16);
+  border: 1px solid rgba(231, 196, 111, 0.35);
+  background: rgba(102, 78, 30, 0.13);
   color: #e7c46f;
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 
 .mockBanner span {
@@ -283,21 +265,20 @@ h3 {
 .panel {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(22, 24, 30, 0.88);
-  backdrop-filter: blur(14px);
 }
 
 .focusPanel {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
-  gap: 18px;
-  padding: 22px;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 14px;
+  padding: 18px;
   scroll-margin-top: 24px;
 }
 
 .focusPanel h2 {
-  font-size: clamp(22px, 3vw, 34px);
-  line-height: 1.12;
-  letter-spacing: -0.04em;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
   margin-bottom: 10px;
 }
 
@@ -313,12 +294,11 @@ h3 {
 
 .projectGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .projectCard {
-  min-height: 190px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(9, 10, 14, 0.45);
   padding: 14px;
@@ -329,13 +309,13 @@ h3 {
   align-items: center;
   justify-content: space-between;
   color: #c7a85a;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .projectCard p {
   color: #d8d3c8;
   line-height: 1.45;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .projectCard small {
@@ -368,13 +348,13 @@ h3 {
 
 .statusStrip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
   scroll-margin-top: 24px;
 }
 
 .statusChip {
-  padding: 14px;
+  padding: 13px;
   min-width: 0;
 }
 
@@ -410,23 +390,23 @@ h3 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .metric,
 .panel {
-  padding: 18px;
+  padding: 16px;
   scroll-margin-top: 24px;
 }
 
 .metric {
-  min-height: 140px;
+  min-height: 118px;
 }
 
 .metricIcon {
   color: #c7a85a;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .metric p {
@@ -434,7 +414,7 @@ h3 {
 }
 
 .metric strong {
-  font-size: 26px;
+  font-size: 24px;
   line-height: 1.1;
 }
 
@@ -479,7 +459,7 @@ h3 {
 
 .queueGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -495,13 +475,13 @@ h3 {
 }
 
 .queueItem {
-  padding: 14px;
+  padding: 13px;
 }
 
 .queueItem strong,
 .bigNumber {
   display: block;
-  font-size: 30px;
+  font-size: 28px;
   margin: 8px 0 0;
 }
 
@@ -515,15 +495,10 @@ h3 {
 
 .healthGrid,
 .brainSyncGrid,
-.contractGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
-}
-
+.contractGrid,
 .requestList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -740,22 +715,22 @@ code {
   }
 
   .mainStage {
-    width: min(1360px, 100vw);
+    width: min(1180px, 100vw);
   }
 
   .focusPanel,
-  .logToolbar {
+  .logToolbar,
+  .projectGrid,
+  .statusStrip,
+  .healthGrid,
+  .brainSyncGrid,
+  .contractGrid,
+  .requestList {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .mainStage {
     padding: 20px 12px 40px;
   }
@@ -782,6 +757,7 @@ code {
   }
 
   .grid,
+  .queueGrid,
   .sideNav {
     grid-template-columns: 1fr;
   }
