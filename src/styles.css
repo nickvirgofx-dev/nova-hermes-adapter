@@ -341,7 +341,8 @@ h3 {
   color: #e7c46f;
 }
 
-.panelTitle {
+.panelTitle,
+.detailsHeader {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -422,43 +423,26 @@ h3 {
 }
 
 .detailStack {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .detailsPanel {
   scroll-margin-top: 24px;
 }
 
-.detailsPanel summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  list-style: none;
-  padding: 12px 14px;
+.detailsHeader {
+  width: 100%;
+  padding: 10px 12px;
   font-weight: 700;
-}
-
-.detailsPanel summary::-webkit-details-marker {
-  display: none;
-}
-
-.detailsPanel summary::after {
-  content: '+';
-  margin-left: auto;
-  color: #c7a85a;
-}
-
-.detailsPanel[open] summary::after {
-  content: '−';
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .detailsBody {
-  border-right: 0;
-  border-bottom: 0;
-  border-left: 0;
+  border: 0;
+  max-height: 230px;
+  overflow: auto;
 }
 
 .requestRow,
@@ -725,10 +709,15 @@ code {
       "projects";
   }
 
+  .detailStack,
   .statusStrip,
   .queueGrid,
   .sideNav {
     grid-template-columns: 1fr;
+  }
+
+  .detailsBody {
+    max-height: none;
   }
 
   .filterButtons {
